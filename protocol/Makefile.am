@@ -1,1 +1,1 @@
-dist_pkgdata_DATA = wayland.xml
+dist_pkgdata_DATA = wayland.xml xdg-surface.xml
