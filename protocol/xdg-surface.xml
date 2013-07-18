@@ -170,9 +170,103 @@
       <entry name="fill" value="3" summary="no upscaling, center on output and add black borders to compensate size mismatch"/>
     </enum>
 
-    <request name="set_fullscreen">
-      <description summary="make the surface a fullscreen surface">
-	Map the surface as a fullscreen surface.
+    <request name="set_popup">
+      <description summary="make the surface a popup surface">
+	Map the surface as a popup.
+
+	A popup surface is a transient surface with an added pointer
+	grab.
+
+	An existing implicit grab will be changed to owner-events mode,
+	and the popup grab will continue after the implicit grab ends
+	(i.e. releasing the mouse button does not cause the popup to
+	be unmapped).
+
+	The popup grab continues until the window is destroyed or a
+	mouse button is pressed in any other clients window. A click
+	in any of the clients surfaces is reported as normal, however,
+	clicks in other clients surfaces will be discarded and trigger
+	the callback.
+
+	The x and y arguments specify the locations of the upper left
+	corner of the surface relative to the upper left corner of the
+	parent surface, in surface local coordinates.
+      </description>
+
+      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
+      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
+      <arg name="parent" type="object" interface="wl_surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="flags" type="uint"/>
+    </request>
+
+    <request name="set_title">
+      <description summary="set surface title">
+	Set a short title for the surface.
+
+	This string may be used to identify the surface in a task bar,
+	window list, or other user interface elements provided by the
+	compositor.
+
+	The string must be encoded in UTF-8.
+      </description>
+      <arg name="title" type="string"/>
+    </request>
+
+    <request name="set_class">
+      <description summary="set surface class">
+	Set a class for the surface.
+
+	The surface class identifies the general class of applications
+	to which the surface belongs. A common convention is to use
+	the file name (full path if non-standard location) of the
+	applications .desktop file as the class.
+      </description>
+      <arg name="class_" type="string"/>
+    </request>
+
+    <request name="state_set_maximized">
+      <description summary="set the surface maximized state">
+	Set the surface state as maximized.
+
+	If an output parameter is given then the surface will be
+	maximized on that output. If the client does not specify the
+	output then the compositor will apply its policy - usually
+	choosing the output on which the surface has the biggest surface
+	area.
+
+	The compositor will reply with a configure event telling
+	the expected new surface size. The operation is completed
+	on the next buffer attach to this surface.
+
+	A maximized surface typically fills the entire output it is
+	bound to, except for desktop element such as panels. This is
+	the main difference between a maximized shell surface and a
+	fullscreen shell surface.
+
+	The details depend on the compositor implementation.
+
+	This state can be set while other surface states are still set,
+	and it won't unset them.
+      </description>
+      <arg name="output" type="object" interface="wl_output" allow-null="true"/>
+    </request>
+
+    <request name="state_unset_maximized">
+      <description summary="unset the surface maximized state">
+        Unset the surface as maximized.
+
+	The surface will be mapped to the corresponding state that has
+	more precedence (e.g. if fullscreen is still set, the surface
+	will be mapped as fullscreen, otherwise as a simple toplevel
+	surface).
+      </description>
+    </request>
+
+    <request name="state_set_fullscreen">
+      <description summary="set the surface fullscreen state">
+	Set the surface state as fullscreen.
 
 	If an output parameter is given then the surface will be made
 	fullscreen on that output. If the client does not specify the
@@ -205,90 +299,25 @@
 	The compositor must reply to this request with a configure event
 	with the dimensions for the output on which the surface will
 	be made fullscreen.
+
+	This state can be set while other surface states are still set,
+	and it won't unset them. It has precedence over maximized, and
+	the surface will be kept fullscreen until unset.
       </description>
       <arg name="method" type="uint"/>
       <arg name="framerate" type="uint"/>
       <arg name="output" type="object" interface="wl_output" allow-null="true"/>
     </request>
 
-    <request name="set_popup">
-      <description summary="make the surface a popup surface">
-	Map the surface as a popup.
+    <request name="state_unset_fullscreen">
+      <description summary="unset the surface fullscreen state">
+        Unset the surface as maximized.
 
-	A popup surface is a transient surface with an added pointer
-	grab.
-
-	An existing implicit grab will be changed to owner-events mode,
-	and the popup grab will continue after the implicit grab ends
-	(i.e. releasing the mouse button does not cause the popup to
-	be unmapped).
-
-	The popup grab continues until the window is destroyed or a
-	mouse button is pressed in any other clients window. A click
-	in any of the clients surfaces is reported as normal, however,
-	clicks in other clients surfaces will be discarded and trigger
-	the callback.
-
-	The x and y arguments specify the locations of the upper left
-	corner of the surface relative to the upper left corner of the
-	parent surface, in surface local coordinates.
+	The surface will be mapped to the corresponding state that has
+	more precedence (e.g. if maximized is still set, the surface
+	will be mapped as maximized, otherwise as a simple toplevel
+	surface).
       </description>
-
-      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
-      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
-      <arg name="parent" type="object" interface="wl_surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="flags" type="uint"/>
-    </request>
-
-    <request name="set_maximized">
-      <description summary="make the surface a maximized surface">
-	Map the surface as a maximized surface.
-
-	If an output parameter is given then the surface will be
-	maximized on that output. If the client does not specify the
-	output then the compositor will apply its policy - usually
-	choosing the output on which the surface has the biggest surface
-	area.
-
-	The compositor will reply with a configure event telling
-	the expected new surface size. The operation is completed
-	on the next buffer attach to this surface.
-
-	A maximized surface typically fills the entire output it is
-	bound to, except for desktop element such as panels. This is
-	the main difference between a maximized shell surface and a
-	fullscreen shell surface.
-
-	The details depend on the compositor implementation.
-      </description>
-      <arg name="output" type="object" interface="wl_output" allow-null="true"/>
-    </request>
-
-    <request name="set_title">
-      <description summary="set surface title">
-	Set a short title for the surface.
-
-	This string may be used to identify the surface in a task bar,
-	window list, or other user interface elements provided by the
-	compositor.
-
-	The string must be encoded in UTF-8.
-      </description>
-      <arg name="title" type="string"/>
-    </request>
-
-    <request name="set_class">
-      <description summary="set surface class">
-	Set a class for the surface.
-
-	The surface class identifies the general class of applications
-	to which the surface belongs. A common convention is to use
-	the file name (full path if non-standard location) of the
-	applications .desktop file as the class.
-      </description>
-      <arg name="class_" type="string"/>
     </request>
 
     <event name="ping">
