@@ -1,4 +1,4 @@
-dist_pkgdata_DATA = wayland.xml wayland.dtd
+dist_pkgdata_DATA = wayland.xml wayland.dtd xdg-surface.xml
 
 if HAVE_XMLLINT
 .PHONY: validate
